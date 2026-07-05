@@ -18,7 +18,7 @@ This document is the **complete specification** of the project: it is meant to b
 - [Branching strategy](#branching-strategy)
 - [Standard response format](#standard-response-format)
 - [Spring AOP](#spring-aop)
-- [feature/config](#featureconfig)
+- [feature/core-architecture](#featurecore-architecture)
 - [feature/dao](#featuredao)
 - [feature/service](#featureservice)
 - [feature/web](#featureweb)
@@ -70,6 +70,7 @@ Explaining how the Spring container actually works, not just how to annotate a c
 | Server | External Tomcat 10 (WAR packaging) |
 | Tests | JUnit 5, Mockito, `spring-test`, MockMvc |
 | CI/CD | GitHub Actions (multi-module build, `mvn -pl ... -am`) |
+| Containerization | Docker (multi-stage build), `docker-compose` for local runs |
 
 ## Data model
 
@@ -161,7 +162,7 @@ spring-tutorial/                          (parent pom, packaging=pom)
 |---|---|
 | `master` | Stable code. No direct commits, only merges from `develop`. |
 | `develop` | Integration branch. |
-| `feature/config` | Parent POM + `common` and `domain` modules. |
+| `feature/core-architecture` | Parent POM + `common` and `domain` modules. |
 | `feature/dao` | `spring-tutorial-dao` module (data access, Java Config). |
 | `feature/service` | `spring-tutorial-service` module (business logic, XML config). |
 | `feature/web` | `spring-tutorial-web` module (JSON API, `@RestController`, `/api/v1` prefix, WAR). |
@@ -215,15 +216,22 @@ The project uses **Spring AOP** to illustrate aspect-oriented programming, kept 
 - Also serves as a teaching base for the other advice types (`@Before`, `@After`, `@AfterReturning`, `@AfterThrowing`) alongside `@Around`
 - Illustrates the proxy-based nature of Spring AOP: since services are Spring-managed beans injected by interface (`CategoryService`, `ProductService`, ...), a JDK dynamic proxy is used rather than a CGLIB subclass proxy
 
-## feature/config
+## feature/core-architecture
+
+Technical foundation shared by the whole project, to be merged first into `develop`.
+Originally named `feature/config`; renamed to better reflect that it lays out the parent POM
+and the two dependency-free foundation modules (`common`, `domain`), not just configuration
+files.
 
 ### Tasks
 
-- [ ] Parent `pom.xml`: `packaging=pom`, `<modules>` section listing the 5 modules, `<dependencyManagement>` centralizing versions (Spring Framework, Hibernate, PostgreSQL driver, JUnit, etc.), `maven-compiler-plugin` (Java 17) declared once
-- [ ] `spring-tutorial-common` module: shared exceptions (`ResourceNotFoundException`, `BusinessRuleException`), no Spring dependency (deliberately a "pure Java" module)
-- [ ] `spring-tutorial-domain` module: JPA entities `Category`, `Product`, `Customer`, `Order` (`jakarta.persistence.*` annotations only, no Spring dependency either)
-- [ ] Flyway script `V1__init_schema.sql` placed under `spring-tutorial-dao/src/main/resources/db/migration`
-- [ ] `.github/workflows/ci.yml`: multi-module build (`mvn -T 1C clean verify` at the root, compiling all modules in the correct order thanks to the Maven dependency graph)
+- [x] Parent `pom.xml`: `packaging=pom`, `<modules>` section listing the 5 modules, `<dependencyManagement>` centralizing versions (Spring Framework, Hibernate, PostgreSQL driver, JUnit, etc.), `maven-compiler-plugin` (Java 17) declared once
+- [x] `spring-tutorial-common` module: shared exceptions (`ResourceNotFoundException`, `BusinessRuleException`), no Spring dependency (deliberately a "pure Java" module)
+- [x] `spring-tutorial-domain` module: JPA entities `Category`, `Product`, `Customer`, `Order` (`jakarta.persistence.*` annotations only, no Spring dependency either)
+- [x] Flyway script `V1__init_schema.sql` placed under `spring-tutorial-dao/src/main/resources/db/migration`
+- [x] `.github/workflows/ci.yml`: multi-module build (`mvn -T 1C clean verify` at the root, compiling all modules in the correct order thanks to the Maven dependency graph)
+- [x] Multi-stage `Dockerfile` (Maven build stage + Tomcat 10 image, deploys the WAR to `webapps/`)
+- [x] `docker-compose.yml`: `web` service built from the `Dockerfile`, joining an externally managed PostgreSQL container instead of declaring its own `db` service (see Configuration notes)
 - [ ] Branch README explaining the role of the parent POM
 
 ### Configuration notes
@@ -239,6 +247,15 @@ The project uses **Spring AOP** to illustrate aspect-oriented programming, kept 
   differently from PostgreSQL on some SQL dialect specifics, while Testcontainers is slower
   but exercises the real engine. Record whichever is chosen in `.claude/CLAUDE.md` once
   decided, so `feature/service` and `feature/web` tests stay consistent with it.
+- **`docker-compose.yml` does not declare its own PostgreSQL service.** In this development
+  environment, a single long-lived `postgres_main` container (PostgreSQL 16) is already
+  shared across several local projects, on an external Docker network (`pg_net`); the `web`
+  service here joins that network and connects to a dedicated `spring_tutorial` database
+  created once inside it (`docker exec postgres_main psql -U admin -d maindb -c "CREATE
+  DATABASE spring_tutorial;"`), instead of starting a redundant, conflicting PostgreSQL
+  container on the same host port. A reader without an equivalent shared container should
+  add their own `db: image: postgres:16` service (with a matching `JDBC_URL`) rather than
+  rely on `pg_net` existing.
 
 ## feature/dao
 
@@ -319,7 +336,7 @@ All routes are prefixed with `/api/v1`.
 
 ## Order of work
 
-1. `feature/config` → Pull Request to `develop`
+1. `feature/core-architecture` → Pull Request to `develop`
 2. `feature/dao` (depends on `config`) → Pull Request to `develop`
 3. `feature/service` (depends on `dao`) → Pull Request to `develop`
 4. `feature/web` (depends on `service`) → Pull Request to `develop`
@@ -389,6 +406,7 @@ The goal is to cover almost the entire "Core Technologies" chapter of the Spring
 ## How to follow this tutorial
 
 1. Clone the repository and check out `develop`
-2. Follow the branches in order: `feature/config` → `feature/dao` → `feature/service` → `feature/web`
+2. Follow the branches in order: `feature/core-architecture` → `feature/dao` → `feature/service` → `feature/web`
 3. Build all modules from the root: `mvn clean install`
-4. Deploy `spring-tutorial-web/target/spring-tutorial-web.war` on a local Tomcat 10, then call the API at `http://localhost:8080/spring-tutorial-web/api/v1/...`
+4. Either run `docker-compose up` (builds the WAR and deploys it on Tomcat 10, see Configuration notes for the PostgreSQL connection), or deploy `spring-tutorial-web/target/spring-tutorial-web.war` manually on a local Tomcat 10
+5. Call the API at `http://localhost:8080/spring-tutorial-web/api/v1/...`

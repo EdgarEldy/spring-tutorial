@@ -78,7 +78,7 @@
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Open decision (see README, feature/config Configuration notes): H2 used here
+        <!-- Open decision (see README, feature/core-architecture Configuration notes): H2 used here
              for fast dao integration tests until Testcontainers is chosen instead. -->
         <dependency>
             <groupId>com.h2database</groupId>
