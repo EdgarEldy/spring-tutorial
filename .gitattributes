@@ -1,0 +1,20 @@
+# Normalize line endings to LF for everyone, regardless of OS/editor config
+* text=auto eol=lf
+
+*.java text
+*.xml text
+*.properties text
+*.yml text
+*.yaml text
+*.sql text
+*.md text
+*.gitattributes text
+*.gitignore text
+
+*.jar binary
+*.war binary
+*.class binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
