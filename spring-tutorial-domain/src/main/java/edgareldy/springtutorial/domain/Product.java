@@ -9,6 +9,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 /**
  * JPA entity mapping the products table, linked to its category through a lazy
@@ -28,14 +31,21 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // No @NotNull here on purpose: the service layer resolves and assigns the category
+    // after Bean Validation already ran on the incoming Product (see ProductServiceImpl),
+    // so it is still null at validation time. The database NOT NULL constraint is the
+    // real guard for this field.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(name = "product_name")
+    @NotBlank
     private String productName;
 
     @Column(name = "unit_price")
+    @NotNull
+    @Positive
     private Double unitPrice;
 
     public Long getId() {

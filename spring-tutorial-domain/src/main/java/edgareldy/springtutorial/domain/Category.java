@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * JPA entity mapping the categories table. Plain jakarta.persistence.* annotations only,
@@ -25,6 +26,7 @@ public class Category {
     private Long id;
 
     @Column(name = "category_name")
+    @NotBlank
     private String categoryName;
 
     public Long getId() {
