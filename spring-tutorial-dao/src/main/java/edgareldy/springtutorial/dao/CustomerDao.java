@@ -18,6 +18,8 @@ public interface CustomerDao {
 
     List<Customer> findAll(int page, int size);
 
+    long count();
+
     Customer save(Customer customer);
 
     void deleteById(Long id);

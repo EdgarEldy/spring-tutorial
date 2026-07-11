@@ -35,6 +35,11 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
+    public long count() {
+        return entityManager.createQuery("SELECT COUNT(c) FROM Customer c", Long.class).getSingleResult();
+    }
+
+    @Override
     public Customer save(Customer customer) {
         if (customer.getId() == null) {
             entityManager.persist(customer);
