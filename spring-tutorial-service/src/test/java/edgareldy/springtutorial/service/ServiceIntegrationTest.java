@@ -2,6 +2,7 @@ package edgareldy.springtutorial.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import edgareldy.springtutorial.common.exception.BusinessRuleException;
@@ -10,8 +11,12 @@ import edgareldy.springtutorial.domain.Category;
 import edgareldy.springtutorial.domain.Customer;
 import edgareldy.springtutorial.domain.Order;
 import edgareldy.springtutorial.domain.Product;
+import edgareldy.springtutorial.service.impl.OrderReferenceGenerator;
+import edgareldy.springtutorial.service.impl.PaginationDefaults;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,6 +63,35 @@ class ServiceIntegrationTest {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private PaginationDefaults paginationDefaults;
+
+    @Autowired
+    private ObjectProvider<OrderReferenceGenerator> orderReferenceGeneratorProvider;
+
+    @Test
+    void paginationDefaultsResolvesTheSpelComputedDefault() {
+        // #{10 * 2} evaluated by the real container, not overridden by
+        // ReflectionTestUtils.setField as the unit tests do.
+        assertEquals(20, paginationDefaults.pageSize(null));
+    }
+
+    @Test
+    void orderReferenceGeneratorIsPrototypeScoped() {
+        OrderReferenceGenerator first = orderReferenceGeneratorProvider.getObject();
+        OrderReferenceGenerator second = orderReferenceGeneratorProvider.getObject();
+
+        assertNotSame(first, second);
+    }
+
+    @Test
+    void creatingAnInvalidCategoryThrowsAConstraintViolation() {
+        Category category = new Category();
+        category.setCategoryName(" ");
+
+        assertThrows(ConstraintViolationException.class, () -> categoryService.create(category));
+    }
+
     @Test
     void categoryWithProductsCannotBeDeleted() {
         Category category = new Category();
@@ -98,5 +132,36 @@ class ServiceIntegrationTest {
 
         assertNotNull(created.getId());
         assertEquals(259.80, created.getTotal(), 0.001);
+    }
+
+    @Test
+    void updatingAnOrderRecomputesTheTotal() {
+        Category category = new Category();
+        category.setCategoryName("Furniture");
+        category = categoryService.create(category);
+
+        Product product = new Product();
+        product.setProductName("Desk");
+        product.setUnitPrice(129.90);
+        product = productService.create(product, category.getId());
+
+        Customer customer = new Customer();
+        customer.setFirstName("Grace");
+        customer.setLastName("Hopper");
+        customer.setTelephone("1111111111");
+        customer.setEmail("grace@example.com");
+        customer.setAddress("1 Compiler Lane");
+        customer = customerService.create(customer);
+
+        Order order = new Order();
+        order.setQuantity(1);
+        Order created = orderService.create(order, customer.getId(), product.getId());
+        assertEquals(129.90, created.getTotal(), 0.001);
+
+        Order updatePayload = new Order();
+        updatePayload.setQuantity(3);
+        Order updated = orderService.update(created.getId(), updatePayload, customer.getId(), product.getId());
+
+        assertEquals(389.70, updated.getTotal(), 0.001);
     }
 }
