@@ -1,6 +1,7 @@
 package edgareldy.springtutorial.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edgareldy.springtutorial.dao.config.PersistenceConfig;
@@ -110,5 +111,48 @@ class OrderDaoTest {
         List<Order> orders = orderDao.findByProductId(product.getId(), 0, 10);
 
         assertTrue(orders.stream().allMatch(o -> o.getProduct().getId().equals(product.getId())));
+    }
+
+    @Test
+    void findAllReturnsSavedOrders() {
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setProduct(product);
+        order.setQuantity(4);
+        order.setTotal(product.getUnitPrice() * 4);
+        Order saved = orderDao.save(order);
+
+        List<Order> orders = orderDao.findAll(0, 10);
+
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(saved.getId())));
+    }
+
+    @Test
+    void countReflectsSavedOrders() {
+        long before = orderDao.count();
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setProduct(product);
+        order.setQuantity(1);
+        order.setTotal(product.getUnitPrice());
+        orderDao.save(order);
+
+        long after = orderDao.count();
+
+        assertTrue(after == before + 1);
+    }
+
+    @Test
+    void deleteByIdRemovesTheOrder() {
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setProduct(product);
+        order.setQuantity(1);
+        order.setTotal(product.getUnitPrice());
+        Order saved = orderDao.save(order);
+
+        orderDao.deleteById(saved.getId());
+
+        assertFalse(orderDao.findById(saved.getId()).isPresent());
     }
 }
