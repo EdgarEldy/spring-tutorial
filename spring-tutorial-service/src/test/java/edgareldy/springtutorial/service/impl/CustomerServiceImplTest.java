@@ -1,5 +1,6 @@
 package edgareldy.springtutorial.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -78,5 +79,46 @@ class CustomerServiceImplTest {
         when(customerDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> customerService.delete(1L));
+    }
+
+    @Test
+    void countDelegatesToTheDao() {
+        when(customerDao.count()).thenReturn(4L);
+
+        assertEquals(4L, customerService.count());
+    }
+
+    @Test
+    void updateAppliesTheNewValuesToTheExistingCustomer() {
+        Customer existing = new Customer();
+        existing.setId(1L);
+        existing.setFirstName("Old");
+        existing.setLastName("Name");
+        existing.setTelephone("0000000000");
+        existing.setEmail("old@example.com");
+        existing.setAddress("Old address");
+        when(customerDao.findById(1L)).thenReturn(Optional.of(existing));
+        when(customerDao.save(existing)).thenReturn(existing);
+
+        Customer payload = validCustomer();
+        Customer updated = customerService.update(1L, payload);
+
+        assertEquals("Grace", updated.getFirstName());
+        assertEquals("Hopper", updated.getLastName());
+        assertEquals("grace@example.com", updated.getEmail());
+    }
+
+    @Test
+    void updateRejectsACustomerWhoseLastNameMatchesTheFirstName() {
+        Customer existing = new Customer();
+        existing.setId(1L);
+        when(customerDao.findById(1L)).thenReturn(Optional.of(existing));
+
+        Customer payload = validCustomer();
+        payload.setLastName(payload.getFirstName());
+
+        assertThrows(BusinessRuleException.class, () -> customerService.update(1L, payload));
+
+        verify(customerDao, never()).save(existing);
     }
 }
