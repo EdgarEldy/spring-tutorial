@@ -80,4 +80,38 @@ class ProductServiceImplTest {
 
         verify(productDao).findByCategoryId(1L, 0, 5);
     }
+
+    @Test
+    void countWithoutCategoryIdDelegatesToCount() {
+        when(productDao.count()).thenReturn(7L);
+
+        assertEquals(7L, productService.count(null));
+    }
+
+    @Test
+    void countWithCategoryIdDelegatesToCountByCategoryId() {
+        when(productDao.countByCategoryId(1L)).thenReturn(3L);
+
+        assertEquals(3L, productService.count(1L));
+    }
+
+    @Test
+    void updateResolvesTheCategoryAgainAndAppliesTheNewValues() {
+        Product existing = new Product();
+        existing.setId(1L);
+        Category newCategory = new Category();
+        newCategory.setId(2L);
+        when(productDao.findById(1L)).thenReturn(Optional.of(existing));
+        when(categoryDao.findById(2L)).thenReturn(Optional.of(newCategory));
+        when(productDao.save(existing)).thenReturn(existing);
+
+        Product payload = new Product();
+        payload.setProductName("Mechanical keyboard");
+        payload.setUnitPrice(79.90);
+        Product updated = productService.update(1L, payload, 2L);
+
+        assertEquals(newCategory, updated.getCategory());
+        assertEquals("Mechanical keyboard", updated.getProductName());
+        assertEquals(79.90, updated.getUnitPrice());
+    }
 }
