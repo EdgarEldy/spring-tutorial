@@ -96,4 +96,35 @@ class CategoryServiceImplTest {
 
         verify(categoryDao).findAll(0, 20);
     }
+
+    @Test
+    void countDelegatesToTheDao() {
+        when(categoryDao.count()).thenReturn(5L);
+
+        assertEquals(5L, categoryService.count());
+    }
+
+    @Test
+    void updateChangesTheCategoryNameOfTheExistingEntity() {
+        Category existing = new Category();
+        existing.setId(1L);
+        existing.setCategoryName("Old name");
+        when(categoryDao.findById(1L)).thenReturn(Optional.of(existing));
+        when(categoryDao.save(existing)).thenReturn(existing);
+
+        Category payload = new Category();
+        payload.setCategoryName("New name");
+        Category updated = categoryService.update(1L, payload);
+
+        assertEquals("New name", updated.getCategoryName());
+    }
+
+    @Test
+    void updateThrowsWhenTheCategoryDoesNotExist() {
+        when(categoryDao.findById(1L)).thenReturn(Optional.empty());
+        Category payload = new Category();
+        payload.setCategoryName("New name");
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.update(1L, payload));
+    }
 }
