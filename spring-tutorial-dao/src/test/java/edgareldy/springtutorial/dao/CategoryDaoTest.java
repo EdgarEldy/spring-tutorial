@@ -63,6 +63,18 @@ class CategoryDaoTest {
     }
 
     @Test
+    void countReflectsSavedCategories() {
+        long before = categoryDao.count();
+        Category category = new Category();
+        category.setCategoryName("Counted");
+        categoryDao.save(category);
+
+        long after = categoryDao.count();
+
+        assertTrue(after == before + 1);
+    }
+
+    @Test
     void deleteByIdRemovesTheCategory() {
         Category category = new Category();
         category.setCategoryName("Temporary");
