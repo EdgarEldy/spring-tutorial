@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 /**
  * JPA entity mapping the orders table, linked to its customer and product through lazy
@@ -26,6 +28,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // No @NotNull here on purpose, same reasoning as Product.category: the service layer
+    // resolves and assigns customer/product after Bean Validation already ran on the
+    // incoming Order (see OrderServiceImpl), so both are still null at validation time.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
@@ -34,6 +39,8 @@ public class Order {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @NotNull
+    @Positive
     private Integer quantity;
 
     private Double total;
