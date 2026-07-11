@@ -21,6 +21,8 @@ public interface ProductDao {
 
     List<Product> findByCategoryId(Long categoryId, int page, int size);
 
+    long count();
+
     long countByCategoryId(Long categoryId);
 
     Product save(Product product);

@@ -53,6 +53,11 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
+    public long count() {
+        return entityManager.createQuery("SELECT COUNT(p) FROM Product p", Long.class).getSingleResult();
+    }
+
+    @Override
     public long countByCategoryId(Long categoryId) {
         return entityManager
                 .createQuery("SELECT COUNT(p) FROM Product p WHERE p.category.id = :categoryId", Long.class)
