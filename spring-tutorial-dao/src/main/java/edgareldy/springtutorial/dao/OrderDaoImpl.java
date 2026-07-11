@@ -63,6 +63,11 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
+    public long count() {
+        return entityManager.createQuery("SELECT COUNT(o) FROM Order o", Long.class).getSingleResult();
+    }
+
+    @Override
     public Order save(Order order) {
         if (order.getId() == null) {
             entityManager.persist(order);

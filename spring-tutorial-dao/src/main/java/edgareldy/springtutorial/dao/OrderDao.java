@@ -23,6 +23,8 @@ public interface OrderDao {
 
     List<Order> findByProductId(Long productId, int page, int size);
 
+    long count();
+
     Order save(Order order);
 
     void deleteById(Long id);
