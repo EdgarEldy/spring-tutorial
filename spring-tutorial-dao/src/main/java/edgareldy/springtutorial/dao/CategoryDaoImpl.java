@@ -35,6 +35,11 @@ public class CategoryDaoImpl implements CategoryDao {
     }
 
     @Override
+    public long count() {
+        return entityManager.createQuery("SELECT COUNT(c) FROM Category c", Long.class).getSingleResult();
+    }
+
+    @Override
     public Category save(Category category) {
         if (category.getId() == null) {
             entityManager.persist(category);

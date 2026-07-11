@@ -19,6 +19,8 @@ public interface CategoryDao {
 
     List<Category> findAll(int page, int size);
 
+    long count();
+
     Category save(Category category);
 
     void deleteById(Long id);
