@@ -1,6 +1,7 @@
 package edgareldy.springtutorial.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edgareldy.springtutorial.dao.config.PersistenceConfig;
@@ -83,5 +84,45 @@ class ProductDaoTest {
         long count = productDao.countByCategoryId(category.getId());
 
         assertTrue(count >= 1);
+    }
+
+    @Test
+    void findAllReturnsSavedProducts() {
+        Product product = new Product();
+        product.setCategory(category);
+        product.setProductName("Webcam");
+        product.setUnitPrice(29.90);
+        productDao.save(product);
+
+        List<Product> products = productDao.findAll(0, 10);
+
+        assertTrue(products.stream().anyMatch(p -> "Webcam".equals(p.getProductName())));
+    }
+
+    @Test
+    void countReflectsSavedProducts() {
+        long before = productDao.count();
+        Product product = new Product();
+        product.setCategory(category);
+        product.setProductName("Counted");
+        product.setUnitPrice(1.0);
+        productDao.save(product);
+
+        long after = productDao.count();
+
+        assertTrue(after == before + 1);
+    }
+
+    @Test
+    void deleteByIdRemovesTheProduct() {
+        Product product = new Product();
+        product.setCategory(category);
+        product.setProductName("Temporary");
+        product.setUnitPrice(9.90);
+        Product saved = productDao.save(product);
+
+        productDao.deleteById(saved.getId());
+
+        assertFalse(productDao.findById(saved.getId()).isPresent());
     }
 }
