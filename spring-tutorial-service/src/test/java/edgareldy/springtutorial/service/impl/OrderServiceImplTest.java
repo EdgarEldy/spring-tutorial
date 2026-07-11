@@ -110,4 +110,33 @@ class OrderServiceImplTest {
 
         verify(orderReferenceGeneratorProvider, org.mockito.Mockito.times(2)).getObject();
     }
+
+    @Test
+    void countDelegatesToTheDao() {
+        when(orderDao.count()).thenReturn(11L);
+
+        assertEquals(11L, orderService.count());
+    }
+
+    @Test
+    void updateResolvesCustomerAndProductAgainAndRecomputesTheTotal() {
+        Order existing = new Order();
+        existing.setId(9L);
+        Customer customer = new Customer();
+        customer.setId(1L);
+        Product product = new Product();
+        product.setId(2L);
+        product.setUnitPrice(10.0);
+        when(orderDao.findById(9L)).thenReturn(Optional.of(existing));
+        when(customerDao.findById(1L)).thenReturn(Optional.of(customer));
+        when(productDao.findById(2L)).thenReturn(Optional.of(product));
+        when(orderDao.save(existing)).thenReturn(existing);
+
+        Order payload = new Order();
+        payload.setQuantity(4);
+        Order updated = orderService.update(9L, payload, 1L, 2L);
+
+        assertEquals(4, updated.getQuantity());
+        assertEquals(40.0, updated.getTotal());
+    }
 }
