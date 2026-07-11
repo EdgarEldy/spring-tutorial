@@ -242,11 +242,11 @@ files.
   manually before locking versions in the parent `<dependencyManagement>` (Spring Framework
   6.2.x requires Hibernate 6.x built against `jakarta.persistence` 3.1, and a Jakarta EE 9+
   Tomcat, i.e. Tomcat 10, not 9).
-- **H2 vs. Testcontainers for `dao` integration tests is an open decision**, to make when
-  `feature/dao` is actually implemented, not before: H2 is faster to start but behaves
-  differently from PostgreSQL on some SQL dialect specifics, while Testcontainers is slower
-  but exercises the real engine. Record whichever is chosen in `.claude/CLAUDE.md` once
-  decided, so `feature/service` and `feature/web` tests stay consistent with it.
+- **H2 vs. Testcontainers for `dao` integration tests: H2 was chosen**, once `feature/dao`
+  needed to decide. It is not only a test convenience: the `@Profile("dev")` `DataSource` in
+  `PersistenceConfig` embeds H2 directly, so the dev profile and the DAO integration tests
+  share the exact same database engine instead of introducing a second one just for tests.
+  `feature/service` and `feature/web` tests should stay consistent with this choice.
 - **`docker-compose.yml` does not declare its own PostgreSQL service.** In this development
   environment, a single long-lived `postgres_main` container (PostgreSQL 16) is already
   shared across several local projects, on an external Docker network (`pg_net`); the `web`
@@ -263,15 +263,15 @@ Depends on `common` and `domain`.
 
 ### Tasks
 
-- [ ] `PersistenceConfig` (Java Config): `DataSource` (connection pool), `LocalContainerEntityManagerFactoryBean` (illustrates the `FactoryBean` pattern), `JpaTransactionManager`, exposed as Spring beans
-- [ ] Spring profiles (`@Profile("dev")` / `@Profile("prod")`) for two different `DataSource` beans (embedded H2 in dev, PostgreSQL in prod), activated via `spring.profiles.active`, to illustrate the `Environment` abstraction
-- [ ] `@PropertySource("classpath:jdbc.properties")` + `Environment`/`@Value` to inject the connection URL and credentials, instead of hard-coding them in `PersistenceConfig`
-- [ ] Bean lifecycle made explicit: `@PostConstruct`/`@PreDestroy` methods (e.g. logging connection pool startup/shutdown)
-- [ ] A teaching `BeanPostProcessor` (e.g. `BeanCreationLoggerPostProcessor`) that logs the name of every bean instantiated in the `dao` context, to make a normally invisible container extension point visible
-- [ ] `CategoryDao`, `ProductDao`, `CustomerDao`, `OrderDao` interfaces (contracts) + `*DaoImpl` implementations using `EntityManager` directly (no Spring Data here, manual DAO to properly show the JPA mechanics)
-- [ ] Explicit JPQL queries for relations (`Product → Category`, `Order → Customer/Product`)
-- [ ] Loading the Flyway script through Spring's `Resource` abstraction (`ClassPathResource`), to illustrate the resource abstraction independently of the file system
-- [ ] Integration tests for the `dao` module with an H2 database or Testcontainers, Spring context loaded via `AnnotationConfigApplicationContext`
+- [x] `PersistenceConfig` (Java Config): `DataSource` (connection pool), `LocalContainerEntityManagerFactoryBean` (illustrates the `FactoryBean` pattern), `JpaTransactionManager`, exposed as Spring beans
+- [x] Spring profiles (`@Profile("dev")` / `@Profile("prod")`) for two different `DataSource` beans (embedded H2 in dev, PostgreSQL in prod), activated via `spring.profiles.active`, to illustrate the `Environment` abstraction
+- [x] `@PropertySource("classpath:jdbc.properties")` + `Environment`/`@Value` to inject the connection URL and credentials, instead of hard-coding them in `PersistenceConfig`
+- [x] Bean lifecycle made explicit: `@PostConstruct`/`@PreDestroy` methods (e.g. logging connection pool startup/shutdown)
+- [x] A teaching `BeanPostProcessor` (e.g. `BeanCreationLoggerPostProcessor`) that logs the name of every bean instantiated in the `dao` context, to make a normally invisible container extension point visible
+- [x] `CategoryDao`, `ProductDao`, `CustomerDao`, `OrderDao` interfaces (contracts) + `*DaoImpl` implementations using `EntityManager` directly (no Spring Data here, manual DAO to properly show the JPA mechanics)
+- [x] Explicit JPQL queries for relations (`Product → Category`, `Order → Customer/Product`)
+- [x] Loading the Flyway script through Spring's `Resource` abstraction (`ClassPathResource`), to illustrate the resource abstraction independently of the file system
+- [x] Integration tests for the `dao` module with an H2 database, Spring context loaded via the `SpringExtension`/`@ContextConfiguration` JUnit 5 integration (the same `AnnotationConfigApplicationContext`-based mechanism, just not instantiated by hand)
 
 ## feature/service
 

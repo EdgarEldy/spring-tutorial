@@ -1,5 +1,6 @@
 package edgareldy.springtutorial.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,8 +32,10 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(name = "product_name")
     private String productName;
 
+    @Column(name = "unit_price")
     private Double unitPrice;
 
     public Long getId() {
