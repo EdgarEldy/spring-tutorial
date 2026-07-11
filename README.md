@@ -279,16 +279,16 @@ Depends on `dao`. Uses **XML configuration** (deliberately different from the Ja
 
 ### Tasks
 
-- [ ] `service-context.xml`: `<context:component-scan base-package="edgareldy.springtutorial.service"/>`, `<tx:annotation-driven/>`, `<aop:aspectj-autoproxy/>`
-- [ ] `CategoryService`, `ProductService`, `CustomerService`, `OrderService` interfaces at the root of `service/`, implementations in `service/impl/`, annotated `@Transactional`
-- [ ] Business rules shared with the other tutorials: deleting a non-empty category is forbidden, `total` computed on orders
-- [ ] Constructor injection with `@Qualifier`: at least two beans of the same type (e.g. two `Clock` beans, `Clock.systemDefaultZone()` in production and a fixed `Clock` injectable in tests) to illustrate disambiguation by qualifier
-- [ ] A `prototype`-scoped bean (e.g. an order reference generator), contrasted with the `singleton` services used by default
-- [ ] `OrderCreatedEvent` application event published via `ApplicationEventPublisher` from `OrderServiceImpl`, consumed by an `@EventListener` (e.g. audit logging) in another bean, to illustrate producer/consumer decoupling within the same context
-- [ ] `LoggingAspect` (`service/aspect/`) implementing the mechanism described in [Spring AOP](#spring-aop)
-- [ ] Use of SpEL in a `@Value` annotation (e.g. a computed default page size) and/or in the XML (`#{...}`)
-- [ ] Business validation with Bean Validation (`@Valid`, `jakarta.validation.constraints.*`) on objects passed to services, and/or a custom `org.springframework.validation.Validator` for a rule that cannot be expressed with annotations
-- [ ] Unit tests (Mockito) and integration tests loading `service-context.xml` via `ClassPathXmlApplicationContext`
+- [x] `service-context.xml`: `<context:component-scan base-package="edgareldy.springtutorial.service"/>`, `<tx:annotation-driven/>`, `<aop:aspectj-autoproxy/>`
+- [x] `CategoryService`, `ProductService`, `CustomerService`, `OrderService` interfaces at the root of `service/`, implementations in `service/impl/`, annotated `@Transactional`
+- [x] Business rules shared with the other tutorials: deleting a non-empty category is forbidden, `total` computed on orders
+- [x] Constructor injection with `@Qualifier`: at least two beans of the same type (e.g. two `Clock` beans, `Clock.systemDefaultZone()` in production and a fixed `Clock` injectable in tests) to illustrate disambiguation by qualifier
+- [x] A `prototype`-scoped bean (e.g. an order reference generator), contrasted with the `singleton` services used by default
+- [x] `OrderCreatedEvent` application event published via `ApplicationEventPublisher` from `OrderServiceImpl`, consumed by an `@EventListener` (e.g. audit logging) in another bean, to illustrate producer/consumer decoupling within the same context
+- [x] `LoggingAspect` (`service/aspect/`) implementing the mechanism described in [Spring AOP](#spring-aop)
+- [x] Use of SpEL in a `@Value` annotation (e.g. a computed default page size) and/or in the XML (`#{...}`)
+- [x] Business validation with Bean Validation (`@Valid`, `jakarta.validation.constraints.*`) on objects passed to services, and/or a custom `org.springframework.validation.Validator` for a rule that cannot be expressed with annotations
+- [x] Unit tests (Mockito) and integration tests loading `service-context.xml` via `ClassPathXmlApplicationContext` (in practice, a `PersistenceConfig`/`service-context.xml` context hierarchy loaded through `SpringExtension`, the same mechanism a hand-instantiated `ClassPathXmlApplicationContext` would use)
 
 ## feature/web
 
