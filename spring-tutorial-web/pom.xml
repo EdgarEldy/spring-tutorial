@@ -22,6 +22,10 @@
     <dependencies>
         <dependency>
             <groupId>edgareldy.springtutorial</groupId>
+            <artifactId>spring-tutorial-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edgareldy.springtutorial</groupId>
             <artifactId>spring-tutorial-service</artifactId>
         </dependency>
 
@@ -67,6 +71,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
