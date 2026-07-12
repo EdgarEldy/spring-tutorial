@@ -18,7 +18,7 @@ This document is the **complete specification** of the project: it is meant to b
 - [Branching strategy](#branching-strategy)
 - [Standard response format](#standard-response-format)
 - [Spring AOP](#spring-aop)
-- [feature/config](#featureconfig)
+- [feature/core-architecture](#featurecore-architecture)
 - [feature/dao](#featuredao)
 - [feature/service](#featureservice)
 - [feature/web](#featureweb)
@@ -70,6 +70,7 @@ Explaining how the Spring container actually works, not just how to annotate a c
 | Server | External Tomcat 10 (WAR packaging) |
 | Tests | JUnit 5, Mockito, `spring-test`, MockMvc |
 | CI/CD | GitHub Actions (multi-module build, `mvn -pl ... -am`) |
+| Containerization | Docker (multi-stage build), `docker-compose` for local runs |
 
 ## Data model
 
@@ -161,7 +162,7 @@ spring-tutorial/                          (parent pom, packaging=pom)
 |---|---|
 | `master` | Stable code. No direct commits, only merges from `develop`. |
 | `develop` | Integration branch. |
-| `feature/config` | Parent POM + `common` and `domain` modules. |
+| `feature/core-architecture` | Parent POM + `common` and `domain` modules. |
 | `feature/dao` | `spring-tutorial-dao` module (data access, Java Config). |
 | `feature/service` | `spring-tutorial-service` module (business logic, XML config). |
 | `feature/web` | `spring-tutorial-web` module (JSON API, `@RestController`, `/api/v1` prefix, WAR). |
@@ -215,15 +216,22 @@ The project uses **Spring AOP** to illustrate aspect-oriented programming, kept 
 - Also serves as a teaching base for the other advice types (`@Before`, `@After`, `@AfterReturning`, `@AfterThrowing`) alongside `@Around`
 - Illustrates the proxy-based nature of Spring AOP: since services are Spring-managed beans injected by interface (`CategoryService`, `ProductService`, ...), a JDK dynamic proxy is used rather than a CGLIB subclass proxy
 
-## feature/config
+## feature/core-architecture
+
+Technical foundation shared by the whole project, to be merged first into `develop`.
+Originally named `feature/config`; renamed to better reflect that it lays out the parent POM
+and the two dependency-free foundation modules (`common`, `domain`), not just configuration
+files.
 
 ### Tasks
 
-- [ ] Parent `pom.xml`: `packaging=pom`, `<modules>` section listing the 5 modules, `<dependencyManagement>` centralizing versions (Spring Framework, Hibernate, PostgreSQL driver, JUnit, etc.), `maven-compiler-plugin` (Java 17) declared once
-- [ ] `spring-tutorial-common` module: shared exceptions (`ResourceNotFoundException`, `BusinessRuleException`), no Spring dependency (deliberately a "pure Java" module)
-- [ ] `spring-tutorial-domain` module: JPA entities `Category`, `Product`, `Customer`, `Order` (`jakarta.persistence.*` annotations only, no Spring dependency either)
-- [ ] Flyway script `V1__init_schema.sql` placed under `spring-tutorial-dao/src/main/resources/db/migration`
-- [ ] `.github/workflows/ci.yml`: multi-module build (`mvn -T 1C clean verify` at the root, compiling all modules in the correct order thanks to the Maven dependency graph)
+- [x] Parent `pom.xml`: `packaging=pom`, `<modules>` section listing the 5 modules, `<dependencyManagement>` centralizing versions (Spring Framework, Hibernate, PostgreSQL driver, JUnit, etc.), `maven-compiler-plugin` (Java 17) declared once
+- [x] `spring-tutorial-common` module: shared exceptions (`ResourceNotFoundException`, `BusinessRuleException`), no Spring dependency (deliberately a "pure Java" module)
+- [x] `spring-tutorial-domain` module: JPA entities `Category`, `Product`, `Customer`, `Order` (`jakarta.persistence.*` annotations only, no Spring dependency either)
+- [x] Flyway script `V1__init_schema.sql` placed under `spring-tutorial-dao/src/main/resources/db/migration`
+- [x] `.github/workflows/ci.yml`: multi-module build (`mvn -T 1C clean verify` at the root, compiling all modules in the correct order thanks to the Maven dependency graph)
+- [x] Multi-stage `Dockerfile` (Maven build stage + Tomcat 10 image, deploys the WAR to `webapps/`)
+- [x] `docker-compose.yml`: `web` service built from the `Dockerfile`, joining an externally managed PostgreSQL container instead of declaring its own `db` service (see Configuration notes)
 - [ ] Branch README explaining the role of the parent POM
 
 ### Configuration notes
@@ -234,11 +242,20 @@ The project uses **Spring AOP** to illustrate aspect-oriented programming, kept 
   manually before locking versions in the parent `<dependencyManagement>` (Spring Framework
   6.2.x requires Hibernate 6.x built against `jakarta.persistence` 3.1, and a Jakarta EE 9+
   Tomcat, i.e. Tomcat 10, not 9).
-- **H2 vs. Testcontainers for `dao` integration tests is an open decision**, to make when
-  `feature/dao` is actually implemented, not before: H2 is faster to start but behaves
-  differently from PostgreSQL on some SQL dialect specifics, while Testcontainers is slower
-  but exercises the real engine. Record whichever is chosen in `.claude/CLAUDE.md` once
-  decided, so `feature/service` and `feature/web` tests stay consistent with it.
+- **H2 vs. Testcontainers for `dao` integration tests: H2 was chosen**, once `feature/dao`
+  needed to decide. It is not only a test convenience: the `@Profile("dev")` `DataSource` in
+  `PersistenceConfig` embeds H2 directly, so the dev profile and the DAO integration tests
+  share the exact same database engine instead of introducing a second one just for tests.
+  `feature/service` and `feature/web` tests should stay consistent with this choice.
+- **`docker-compose.yml` does not declare its own PostgreSQL service.** In this development
+  environment, a single long-lived `postgres_main` container (PostgreSQL 16) is already
+  shared across several local projects, on an external Docker network (`pg_net`); the `web`
+  service here joins that network and connects to a dedicated `spring_tutorial` database
+  created once inside it (`docker exec postgres_main psql -U admin -d maindb -c "CREATE
+  DATABASE spring_tutorial;"`), instead of starting a redundant, conflicting PostgreSQL
+  container on the same host port. A reader without an equivalent shared container should
+  add their own `db: image: postgres:16` service (with a matching `JDBC_URL`) rather than
+  rely on `pg_net` existing.
 
 ## feature/dao
 
@@ -246,15 +263,15 @@ Depends on `common` and `domain`.
 
 ### Tasks
 
-- [ ] `PersistenceConfig` (Java Config): `DataSource` (connection pool), `LocalContainerEntityManagerFactoryBean` (illustrates the `FactoryBean` pattern), `JpaTransactionManager`, exposed as Spring beans
-- [ ] Spring profiles (`@Profile("dev")` / `@Profile("prod")`) for two different `DataSource` beans (embedded H2 in dev, PostgreSQL in prod), activated via `spring.profiles.active`, to illustrate the `Environment` abstraction
-- [ ] `@PropertySource("classpath:jdbc.properties")` + `Environment`/`@Value` to inject the connection URL and credentials, instead of hard-coding them in `PersistenceConfig`
-- [ ] Bean lifecycle made explicit: `@PostConstruct`/`@PreDestroy` methods (e.g. logging connection pool startup/shutdown)
-- [ ] A teaching `BeanPostProcessor` (e.g. `BeanCreationLoggerPostProcessor`) that logs the name of every bean instantiated in the `dao` context, to make a normally invisible container extension point visible
-- [ ] `CategoryDao`, `ProductDao`, `CustomerDao`, `OrderDao` interfaces (contracts) + `*DaoImpl` implementations using `EntityManager` directly (no Spring Data here, manual DAO to properly show the JPA mechanics)
-- [ ] Explicit JPQL queries for relations (`Product → Category`, `Order → Customer/Product`)
-- [ ] Loading the Flyway script through Spring's `Resource` abstraction (`ClassPathResource`), to illustrate the resource abstraction independently of the file system
-- [ ] Integration tests for the `dao` module with an H2 database or Testcontainers, Spring context loaded via `AnnotationConfigApplicationContext`
+- [x] `PersistenceConfig` (Java Config): `DataSource` (connection pool), `LocalContainerEntityManagerFactoryBean` (illustrates the `FactoryBean` pattern), `JpaTransactionManager`, exposed as Spring beans
+- [x] Spring profiles (`@Profile("dev")` / `@Profile("prod")`) for two different `DataSource` beans (embedded H2 in dev, PostgreSQL in prod), activated via `spring.profiles.active`, to illustrate the `Environment` abstraction
+- [x] `@PropertySource("classpath:jdbc.properties")` + `Environment`/`@Value` to inject the connection URL and credentials, instead of hard-coding them in `PersistenceConfig`
+- [x] Bean lifecycle made explicit: `@PostConstruct`/`@PreDestroy` methods (e.g. logging connection pool startup/shutdown)
+- [x] A teaching `BeanPostProcessor` (e.g. `BeanCreationLoggerPostProcessor`) that logs the name of every bean instantiated in the `dao` context, to make a normally invisible container extension point visible
+- [x] `CategoryDao`, `ProductDao`, `CustomerDao`, `OrderDao` interfaces (contracts) + `*DaoImpl` implementations using `EntityManager` directly (no Spring Data here, manual DAO to properly show the JPA mechanics)
+- [x] Explicit JPQL queries for relations (`Product → Category`, `Order → Customer/Product`)
+- [x] Loading the Flyway script through Spring's `Resource` abstraction (`ClassPathResource`), to illustrate the resource abstraction independently of the file system
+- [x] Integration tests for the `dao` module with an H2 database, Spring context loaded via the `SpringExtension`/`@ContextConfiguration` JUnit 5 integration (the same `AnnotationConfigApplicationContext`-based mechanism, just not instantiated by hand)
 
 ## feature/service
 
@@ -262,16 +279,16 @@ Depends on `dao`. Uses **XML configuration** (deliberately different from the Ja
 
 ### Tasks
 
-- [ ] `service-context.xml`: `<context:component-scan base-package="edgareldy.springtutorial.service"/>`, `<tx:annotation-driven/>`, `<aop:aspectj-autoproxy/>`
-- [ ] `CategoryService`, `ProductService`, `CustomerService`, `OrderService` interfaces at the root of `service/`, implementations in `service/impl/`, annotated `@Transactional`
-- [ ] Business rules shared with the other tutorials: deleting a non-empty category is forbidden, `total` computed on orders
-- [ ] Constructor injection with `@Qualifier`: at least two beans of the same type (e.g. two `Clock` beans, `Clock.systemDefaultZone()` in production and a fixed `Clock` injectable in tests) to illustrate disambiguation by qualifier
-- [ ] A `prototype`-scoped bean (e.g. an order reference generator), contrasted with the `singleton` services used by default
-- [ ] `OrderCreatedEvent` application event published via `ApplicationEventPublisher` from `OrderServiceImpl`, consumed by an `@EventListener` (e.g. audit logging) in another bean, to illustrate producer/consumer decoupling within the same context
-- [ ] `LoggingAspect` (`service/aspect/`) implementing the mechanism described in [Spring AOP](#spring-aop)
-- [ ] Use of SpEL in a `@Value` annotation (e.g. a computed default page size) and/or in the XML (`#{...}`)
-- [ ] Business validation with Bean Validation (`@Valid`, `jakarta.validation.constraints.*`) on objects passed to services, and/or a custom `org.springframework.validation.Validator` for a rule that cannot be expressed with annotations
-- [ ] Unit tests (Mockito) and integration tests loading `service-context.xml` via `ClassPathXmlApplicationContext`
+- [x] `service-context.xml`: `<context:component-scan base-package="edgareldy.springtutorial.service"/>`, `<tx:annotation-driven/>`, `<aop:aspectj-autoproxy/>`
+- [x] `CategoryService`, `ProductService`, `CustomerService`, `OrderService` interfaces at the root of `service/`, implementations in `service/impl/`, annotated `@Transactional`
+- [x] Business rules shared with the other tutorials: deleting a non-empty category is forbidden, `total` computed on orders
+- [x] Constructor injection with `@Qualifier`: at least two beans of the same type (e.g. two `Clock` beans, `Clock.systemDefaultZone()` in production and a fixed `Clock` injectable in tests) to illustrate disambiguation by qualifier
+- [x] A `prototype`-scoped bean (e.g. an order reference generator), contrasted with the `singleton` services used by default
+- [x] `OrderCreatedEvent` application event published via `ApplicationEventPublisher` from `OrderServiceImpl`, consumed by an `@EventListener` (e.g. audit logging) in another bean, to illustrate producer/consumer decoupling within the same context
+- [x] `LoggingAspect` (`service/aspect/`) implementing the mechanism described in [Spring AOP](#spring-aop)
+- [x] Use of SpEL in a `@Value` annotation (e.g. a computed default page size) and/or in the XML (`#{...}`)
+- [x] Business validation with Bean Validation (`@Valid`, `jakarta.validation.constraints.*`) on objects passed to services, and/or a custom `org.springframework.validation.Validator` for a rule that cannot be expressed with annotations
+- [x] Unit tests (Mockito) and integration tests loading `service-context.xml` via `ClassPathXmlApplicationContext` (in practice, a `PersistenceConfig`/`service-context.xml` context hierarchy loaded through `SpringExtension`, the same mechanism a hand-instantiated `ClassPathXmlApplicationContext` would use)
 
 ## feature/web
 
@@ -306,20 +323,20 @@ All routes are prefixed with `/api/v1`.
 
 ### Tasks
 
-- [ ] `WebAppInitializer` (`WebApplicationInitializer`): registers the `DispatcherServlet`, replaces `web.xml`
-- [ ] `WebMvcConfig` (`@EnableWebMvc`): maps the `DispatcherServlet` to `/api/v1/*`, configures Jackson `HttpMessageConverter`s, imports the `service-context.xml` context and `PersistenceConfig`
-- [ ] Request/Response DTOs + mappers (same conventions as `spring-boot-tutorial`: `record` DTOs, never a JPA entity exposed directly), annotated `@Valid`/`@NotNull`/`@Size` to validate incoming requests
-- [ ] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`), wrapping every response
-- [ ] `WebExceptionHandler` (`@ControllerAdvice`, in `web/exception/`) implementing the exception-to-status mapping described in [Standard response format](#standard-response-format) (404/400/422/500)
-- [ ] `MessageSource` (`ReloadableResourceBundleMessageSource`) + `messages_fr.properties`/`messages_en.properties` files, locale resolved from the `Accept-Language` header, to illustrate internationalization
-- [ ] A `HandlerInterceptor` (e.g. `RequestLoggingInterceptor`) registered via `WebMvcConfigurer#addInterceptors`, to illustrate an MVC extension point outside of Servlet filters
-- [ ] A `request`-scoped bean (scoped proxy, e.g. a request correlation context) injected into a controller, to illustrate web-related scopes
-- [ ] `@RestController` controllers per resource (`@RequestMapping("/api/v1/...")`), delegating only to the `service` layer
-- [ ] `MockMvc` tests for the `web` module
+- [x] `WebAppInitializer` (`WebApplicationInitializer`): registers the `DispatcherServlet`, replaces `web.xml`
+- [x] `WebMvcConfig` (`@EnableWebMvc`): maps the `DispatcherServlet` to `/api/v1/*`, configures Jackson `HttpMessageConverter`s, imports the `service-context.xml` context and `PersistenceConfig`
+- [x] Request/Response DTOs + mappers (same conventions as `spring-boot-tutorial`: `record` DTOs, never a JPA entity exposed directly), annotated `@Valid`/`@NotNull`/`@Size` to validate incoming requests
+- [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`), wrapping every response
+- [x] `WebExceptionHandler` (`@ControllerAdvice`, in `web/exception/`) implementing the exception-to-status mapping described in [Standard response format](#standard-response-format) (404/400/422/500)
+- [x] `MessageSource` (`ReloadableResourceBundleMessageSource`) + `messages_fr.properties`/`messages_en.properties` files, locale resolved from the `Accept-Language` header, to illustrate internationalization
+- [x] A `HandlerInterceptor` (e.g. `RequestLoggingInterceptor`) registered via `WebMvcConfigurer#addInterceptors`, to illustrate an MVC extension point outside of Servlet filters
+- [x] A `request`-scoped bean (scoped proxy, e.g. a request correlation context) injected into a controller, to illustrate web-related scopes
+- [x] `@RestController` controllers per resource (`@RequestMapping("/api/v1/...")`), delegating only to the `service` layer
+- [x] `MockMvc` tests for the `web` module
 
 ## Order of work
 
-1. `feature/config` → Pull Request to `develop`
+1. `feature/core-architecture` → Pull Request to `develop`
 2. `feature/dao` (depends on `config`) → Pull Request to `develop`
 3. `feature/service` (depends on `dao`) → Pull Request to `develop`
 4. `feature/web` (depends on `service`) → Pull Request to `develop`
@@ -389,6 +406,7 @@ The goal is to cover almost the entire "Core Technologies" chapter of the Spring
 ## How to follow this tutorial
 
 1. Clone the repository and check out `develop`
-2. Follow the branches in order: `feature/config` → `feature/dao` → `feature/service` → `feature/web`
+2. Follow the branches in order: `feature/core-architecture` → `feature/dao` → `feature/service` → `feature/web`
 3. Build all modules from the root: `mvn clean install`
-4. Deploy `spring-tutorial-web/target/spring-tutorial-web.war` on a local Tomcat 10, then call the API at `http://localhost:8080/spring-tutorial-web/api/v1/...`
+4. Either run `docker-compose up` (builds the WAR and deploys it on Tomcat 10, see Configuration notes for the PostgreSQL connection), or deploy `spring-tutorial-web/target/spring-tutorial-web.war` manually on a local Tomcat 10
+5. Call the API at `http://localhost:8080/spring-tutorial-web/api/v1/...`

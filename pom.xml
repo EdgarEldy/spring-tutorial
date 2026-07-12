@@ -31,6 +31,7 @@
         <hibernate.version>6.6.4.Final</hibernate.version>
         <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+        <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <postgresql.version>42.7.4</postgresql.version>
@@ -104,6 +105,23 @@
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>${jakarta.servlet.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- JSR-250 annotations (@PostConstruct/@PreDestroy), not bundled with
+                 jakarta.persistence-api or spring-context -->
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta.annotation.version}</version>
+            </dependency>
+
+            <!-- Pinned explicitly: flyway-core pulls jackson-dataformat-toml, which
+                 depends directly on an older jackson-core than jackson-databind expects,
+                 causing a NoSuchMethodError at runtime if left to "nearest wins". -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

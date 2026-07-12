@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- Discovers @Service/@Component classes (CategoryServiceImpl and friends,
+         PaginationDefaults, CustomerValidator, LoggingAspect, the event listener). This
+         module uses annotation-driven discovery plus XML wiring for beans the JDK does
+         not let us annotate (java.time.Clock), unlike the dao module's pure Java Config. -->
+    <context:component-scan base-package="edgareldy.springtutorial.service"/>
+
+    <!-- Activates @Transactional on service methods; the PlatformTransactionManager bean
+         itself comes from the dao module's PersistenceConfig, imported by whichever
+         context assembles both (the web module later). -->
+    <tx:annotation-driven/>
+
+    <!-- Weaves LoggingAspect's @Around advice into every service.impl bean. -->
+    <aop:aspectj-autoproxy/>
+
+    <!-- Enables @Validated + @Valid on service method parameters: a proxy validates the
+         argument against its Bean Validation constraints before the method body runs,
+         throwing ConstraintViolationException on failure. Declared explicitly because,
+         like the AOP auto-proxying above, nothing wires this in automatically outside of
+         Spring Boot. ParameterMessageInterpolator is set explicitly because Hibernate
+         Validator's default interpolator needs a jakarta.el implementation on the
+         classpath (for ${...} message templates), which this project does not otherwise
+         need and does not depend on. -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="messageInterpolator">
+            <bean class="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator"/>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.validation.beanvalidation.MethodValidationPostProcessor">
+        <property name="validator" ref="validator"/>
+    </bean>
+
+    <!-- Two beans of the same type (java.time.Clock), disambiguated by @Qualifier in
+         OrderReferenceGenerator's constructor: systemClock for real order references,
+         fixedClock available for tests that need a deterministic instant. -->
+    <bean id="systemClock" class="java.time.Clock" factory-method="systemDefaultZone"/>
+
+    <bean id="fixedInstant" class="java.time.Instant" factory-method="parse">
+        <constructor-arg value="2026-01-01T00:00:00Z"/>
+    </bean>
+
+    <bean id="utcZone" class="java.time.ZoneId" factory-method="of">
+        <constructor-arg value="UTC"/>
+    </bean>
+
+    <bean id="fixedClock" class="java.time.Clock" factory-method="fixed">
+        <constructor-arg ref="fixedInstant"/>
+        <constructor-arg ref="utcZone"/>
+    </bean>
+
+</beans>

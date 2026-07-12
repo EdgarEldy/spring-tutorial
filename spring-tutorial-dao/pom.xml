@@ -58,6 +58,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Backs the "dev" Spring profile's embedded DataSource (PersistenceConfig), not
+             just tests: the H2 driver must be on the runtime classpath of the running app. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -69,6 +77,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
@@ -76,13 +89,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Open decision (see README, feature/config Configuration notes): H2 used here
-             for fast dao integration tests until Testcontainers is chosen instead. -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
