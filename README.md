@@ -323,16 +323,16 @@ All routes are prefixed with `/api/v1`.
 
 ### Tasks
 
-- [ ] `WebAppInitializer` (`WebApplicationInitializer`): registers the `DispatcherServlet`, replaces `web.xml`
-- [ ] `WebMvcConfig` (`@EnableWebMvc`): maps the `DispatcherServlet` to `/api/v1/*`, configures Jackson `HttpMessageConverter`s, imports the `service-context.xml` context and `PersistenceConfig`
-- [ ] Request/Response DTOs + mappers (same conventions as `spring-boot-tutorial`: `record` DTOs, never a JPA entity exposed directly), annotated `@Valid`/`@NotNull`/`@Size` to validate incoming requests
-- [ ] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`), wrapping every response
-- [ ] `WebExceptionHandler` (`@ControllerAdvice`, in `web/exception/`) implementing the exception-to-status mapping described in [Standard response format](#standard-response-format) (404/400/422/500)
-- [ ] `MessageSource` (`ReloadableResourceBundleMessageSource`) + `messages_fr.properties`/`messages_en.properties` files, locale resolved from the `Accept-Language` header, to illustrate internationalization
-- [ ] A `HandlerInterceptor` (e.g. `RequestLoggingInterceptor`) registered via `WebMvcConfigurer#addInterceptors`, to illustrate an MVC extension point outside of Servlet filters
-- [ ] A `request`-scoped bean (scoped proxy, e.g. a request correlation context) injected into a controller, to illustrate web-related scopes
-- [ ] `@RestController` controllers per resource (`@RequestMapping("/api/v1/...")`), delegating only to the `service` layer
-- [ ] `MockMvc` tests for the `web` module
+- [x] `WebAppInitializer` (`WebApplicationInitializer`): registers the `DispatcherServlet`, replaces `web.xml`
+- [x] `WebMvcConfig` (`@EnableWebMvc`): maps the `DispatcherServlet` to `/api/v1/*`, configures Jackson `HttpMessageConverter`s, imports the `service-context.xml` context and `PersistenceConfig`
+- [x] Request/Response DTOs + mappers (same conventions as `spring-boot-tutorial`: `record` DTOs, never a JPA entity exposed directly), annotated `@Valid`/`@NotNull`/`@Size` to validate incoming requests
+- [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`), wrapping every response
+- [x] `WebExceptionHandler` (`@ControllerAdvice`, in `web/exception/`) implementing the exception-to-status mapping described in [Standard response format](#standard-response-format) (404/400/422/500)
+- [x] `MessageSource` (`ReloadableResourceBundleMessageSource`) + `messages_fr.properties`/`messages_en.properties` files, locale resolved from the `Accept-Language` header, to illustrate internationalization
+- [x] A `HandlerInterceptor` (e.g. `RequestLoggingInterceptor`) registered via `WebMvcConfigurer#addInterceptors`, to illustrate an MVC extension point outside of Servlet filters
+- [x] A `request`-scoped bean (scoped proxy, e.g. a request correlation context) injected into a controller, to illustrate web-related scopes
+- [x] `@RestController` controllers per resource (`@RequestMapping("/api/v1/...")`), delegating only to the `service` layer
+- [x] `MockMvc` tests for the `web` module
 
 ## Order of work
 

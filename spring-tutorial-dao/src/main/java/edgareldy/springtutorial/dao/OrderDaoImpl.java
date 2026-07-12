@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * EntityManager-based implementation of OrderDao. Every query joins Customer and
- * Product eagerly (JOIN FETCH) since order listings always need both.
+ * EntityManager-based implementation of OrderDao. Every query joins Customer, Product
+ * and the Product's Category eagerly (JOIN FETCH): order listings always need all
+ * three, and none of the finder methods below run inside a transaction (see
+ * OrderServiceImpl), so a lazy Category proxy would otherwise throw
+ * LazyInitializationException once the session used to load it is closed, in
+ * particular when the web module's OrderMapper walks order.getProduct().getCategory().
  * <p>
  * Created edgar.muhamyangabo on 7/6/26
  * Author : edgar.muhamyangabo
@@ -16,7 +20,8 @@ import java.util.Optional;
  */
 public class OrderDaoImpl implements OrderDao {
 
-    private static final String BASE_QUERY = "SELECT o FROM Order o JOIN FETCH o.customer JOIN FETCH o.product";
+    private static final String BASE_QUERY =
+            "SELECT o FROM Order o JOIN FETCH o.customer JOIN FETCH o.product p JOIN FETCH p.category";
 
     private final EntityManager entityManager;
 
