@@ -21,9 +21,21 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 public class WebAppInitializer implements WebApplicationInitializer {
 
+    private static final String ACTIVE_PROFILE_SYSTEM_PROPERTY = "spring.profiles.active";
+    private static final String DEFAULT_PROFILE = "prod";
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        // PersistenceConfig only declares a DataSource bean under @Profile("dev") or
+        // @Profile("prod"): without an active profile, the context fails to refresh
+        // because no DataSource candidate exists at all. A real WAR on Tomcat has no
+        // Boot-style application.yml to default this from, so the profile is resolved
+        // explicitly here, defaulting to prod and overridable with
+        // -Dspring.profiles.active=dev (set by the dao/service integration tests instead
+        // through @ActiveProfiles, which bypasses this class entirely).
+        String activeProfile = System.getProperty(ACTIVE_PROFILE_SYSTEM_PROPERTY, DEFAULT_PROFILE);
+        context.getEnvironment().setActiveProfiles(activeProfile);
         context.register(WebMvcConfig.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
