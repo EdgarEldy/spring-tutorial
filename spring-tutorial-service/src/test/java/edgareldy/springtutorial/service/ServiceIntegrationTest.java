@@ -70,14 +70,14 @@ class ServiceIntegrationTest {
     private ObjectProvider<OrderReferenceGenerator> orderReferenceGeneratorProvider;
 
     @Test
-    void paginationDefaultsResolvesTheSpelComputedDefault() {
+    void _01_ShouldResolveSpelComputedDefault_WhenPaginationDefaultsAreInjected() {
         // #{10 * 2} evaluated by the real container, not overridden by
         // ReflectionTestUtils.setField as the unit tests do.
         assertEquals(20, paginationDefaults.pageSize(null));
     }
 
     @Test
-    void orderReferenceGeneratorIsPrototypeScoped() {
+    void _02_ShouldReturnDistinctInstances_WhenOrderReferenceGeneratorIsPrototypeScoped() {
         OrderReferenceGenerator first = orderReferenceGeneratorProvider.getObject();
         OrderReferenceGenerator second = orderReferenceGeneratorProvider.getObject();
 
@@ -85,7 +85,7 @@ class ServiceIntegrationTest {
     }
 
     @Test
-    void creatingAnInvalidCategoryThrowsAConstraintViolation() {
+    void _03_ShouldThrowConstraintViolation_WhenCategoryIsInvalid() {
         Category category = new Category();
         category.setCategoryName(" ");
 
@@ -93,7 +93,7 @@ class ServiceIntegrationTest {
     }
 
     @Test
-    void categoryWithProductsCannotBeDeleted() {
+    void _04_ShouldRejectDeletion_WhenCategoryStillHasProducts() {
         Category category = new Category();
         category.setCategoryName("Electronics");
         category = categoryService.create(category);
@@ -108,7 +108,7 @@ class ServiceIntegrationTest {
     }
 
     @Test
-    void creatingAnOrderResolvesCustomerAndProductAndComputesTotal() {
+    void _05_ShouldResolveCustomerAndProductAndComputeTotal_WhenOrderIsCreated() {
         Category category = new Category();
         category.setCategoryName("Furniture");
         category = categoryService.create(category);
@@ -135,7 +135,7 @@ class ServiceIntegrationTest {
     }
 
     @Test
-    void updatingAnOrderRecomputesTheTotal() {
+    void _06_ShouldRecomputeTotal_WhenOrderIsUpdated() {
         Category category = new Category();
         category.setCategoryName("Furniture");
         category = categoryService.create(category);

@@ -77,7 +77,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    void findAllReturnsAPagedApiResponse() throws Exception {
+    void _01_ShouldReturnPagedApiResponse_WhenCustomersAreListed() throws Exception {
         when(customerService.findAll(anyInt(), any())).thenReturn(List.of(customerFixture()));
         when(customerService.count()).thenReturn(1L);
 
@@ -88,14 +88,14 @@ class CustomerControllerTest {
     }
 
     @Test
-    void findByIdReturnsNotFoundWhenMissing() throws Exception {
+    void _02_ShouldReturnNotFound_WhenCustomerIsMissing() throws Exception {
         when(customerService.findById(99L)).thenThrow(new ResourceNotFoundException("Customer 99 not found"));
 
         mockMvc.perform(get("/api/v1/customers/{id}", 99L)).andExpect(status().isNotFound());
     }
 
     @Test
-    void createDelegatesToTheService() throws Exception {
+    void _03_ShouldDelegateToService_WhenCustomerIsCreated() throws Exception {
         when(customerService.create(any())).thenReturn(customerFixture());
 
         MvcResult result = mockMvc.perform(post("/api/v1/customers")
@@ -109,7 +109,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    void createRejectsAnInvalidEmail() throws Exception {
+    void _04_ShouldRejectCreation_WhenEmailIsInvalid() throws Exception {
         mockMvc.perform(post("/api/v1/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -118,7 +118,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    void updateDelegatesToTheService() throws Exception {
+    void _05_ShouldDelegateToService_WhenCustomerIsUpdated() throws Exception {
         when(customerService.update(eq(1L), any())).thenReturn(customerFixture());
 
         mockMvc.perform(put("/api/v1/customers/{id}", 1L)
@@ -129,7 +129,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    void deleteDelegatesToTheService() throws Exception {
+    void _06_ShouldDelegateToService_WhenCustomerIsDeleted() throws Exception {
         mockMvc.perform(delete("/api/v1/customers/{id}", 1L)).andExpect(status().isOk());
 
         verify(customerService).delete(1L);

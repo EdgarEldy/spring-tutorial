@@ -48,7 +48,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void findByIdReturnsTheCategoryWhenItExists() {
+    void _01_ShouldReturnCategory_WhenCategoryExists() {
         Category category = new Category();
         category.setId(1L);
         category.setCategoryName("Electronics");
@@ -60,14 +60,14 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void findByIdThrowsWhenTheCategoryDoesNotExist() {
+    void _02_ShouldThrowNotFound_WhenCategoryDoesNotExist() {
         when(categoryDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> categoryService.findById(1L));
     }
 
     @Test
-    void deleteRemovesTheCategoryWhenItHasNoProducts() {
+    void _03_ShouldRemoveCategory_WhenCategoryHasNoProducts() {
         Category category = new Category();
         category.setId(1L);
         when(categoryDao.findById(1L)).thenReturn(Optional.of(category));
@@ -79,7 +79,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenTheCategoryStillHasProducts() {
+    void _04_ShouldThrowException_WhenCategoryStillHasProducts() {
         Category category = new Category();
         category.setId(1L);
         when(categoryDao.findById(1L)).thenReturn(Optional.of(category));
@@ -91,21 +91,21 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void findAllUsesTheDefaultPageSizeWhenNoneIsRequested() {
+    void _05_ShouldUseDefaultPageSize_WhenNoneIsRequested() {
         categoryService.findAll(0, null);
 
         verify(categoryDao).findAll(0, 20);
     }
 
     @Test
-    void countDelegatesToTheDao() {
+    void _06_ShouldDelegateToDao_WhenCounting() {
         when(categoryDao.count()).thenReturn(5L);
 
         assertEquals(5L, categoryService.count());
     }
 
     @Test
-    void updateChangesTheCategoryNameOfTheExistingEntity() {
+    void _07_ShouldChangeCategoryName_WhenExistingCategoryIsUpdated() {
         Category existing = new Category();
         existing.setId(1L);
         existing.setCategoryName("Old name");
@@ -120,7 +120,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void updateThrowsWhenTheCategoryDoesNotExist() {
+    void _08_ShouldThrowNotFound_WhenUpdatedCategoryDoesNotExist() {
         when(categoryDao.findById(1L)).thenReturn(Optional.empty());
         Category payload = new Category();
         payload.setCategoryName("New name");

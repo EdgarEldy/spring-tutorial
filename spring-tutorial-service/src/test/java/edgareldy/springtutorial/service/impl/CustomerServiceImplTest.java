@@ -55,7 +55,7 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void createSavesAValidCustomer() {
+    void _01_ShouldSaveCustomer_WhenCustomerIsValid() {
         Customer customer = validCustomer();
         when(customerDao.save(customer)).thenReturn(customer);
 
@@ -65,7 +65,7 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void createRejectsACustomerWhoseLastNameMatchesTheFirstName() {
+    void _02_ShouldRejectCustomer_WhenLastNameMatchesFirstName() {
         Customer customer = validCustomer();
         customer.setLastName("Grace");
 
@@ -75,21 +75,21 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenTheCustomerDoesNotExist() {
+    void _03_ShouldThrowNotFound_WhenDeletedCustomerDoesNotExist() {
         when(customerDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> customerService.delete(1L));
     }
 
     @Test
-    void countDelegatesToTheDao() {
+    void _04_ShouldDelegateToDao_WhenCounting() {
         when(customerDao.count()).thenReturn(4L);
 
         assertEquals(4L, customerService.count());
     }
 
     @Test
-    void updateAppliesTheNewValuesToTheExistingCustomer() {
+    void _05_ShouldApplyNewValues_WhenExistingCustomerIsUpdated() {
         Customer existing = new Customer();
         existing.setId(1L);
         existing.setFirstName("Old");
@@ -109,7 +109,7 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void updateRejectsACustomerWhoseLastNameMatchesTheFirstName() {
+    void _06_ShouldRejectUpdate_WhenLastNameMatchesFirstName() {
         Customer existing = new Customer();
         existing.setId(1L);
         when(customerDao.findById(1L)).thenReturn(Optional.of(existing));

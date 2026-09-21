@@ -98,7 +98,7 @@ class OrderControllerTest {
     }
 
     @Test
-    void findAllReturnsAPagedApiResponse() throws Exception {
+    void _01_ShouldReturnPagedApiResponse_WhenOrdersAreListed() throws Exception {
         when(orderService.findAll(isNull(), isNull(), anyInt(), any())).thenReturn(List.of(orderFixture()));
         when(orderService.count()).thenReturn(1L);
 
@@ -109,14 +109,14 @@ class OrderControllerTest {
     }
 
     @Test
-    void findByIdReturnsNotFoundWhenMissing() throws Exception {
+    void _02_ShouldReturnNotFound_WhenOrderIsMissing() throws Exception {
         when(orderService.findById(99L)).thenThrow(new ResourceNotFoundException("Order 99 not found"));
 
         mockMvc.perform(get("/api/v1/orders/{id}", 99L)).andExpect(status().isNotFound());
     }
 
     @Test
-    void createDelegatesToTheServiceWithTheResolvedCustomerAndProductIds() throws Exception {
+    void _03_ShouldDelegateWithResolvedCustomerAndProductIds_WhenOrderIsCreated() throws Exception {
         when(orderService.create(any(), eq(1L), eq(1L))).thenReturn(orderFixture());
 
         MvcResult result = mockMvc.perform(post("/api/v1/orders")
@@ -129,7 +129,7 @@ class OrderControllerTest {
     }
 
     @Test
-    void createRejectsANonPositiveQuantity() throws Exception {
+    void _04_ShouldRejectCreation_WhenQuantityIsNotPositive() throws Exception {
         mockMvc.perform(post("/api/v1/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new OrderPayload(0, 1L, 1L))))
@@ -137,7 +137,7 @@ class OrderControllerTest {
     }
 
     @Test
-    void updateDelegatesToTheService() throws Exception {
+    void _05_ShouldDelegateToService_WhenOrderIsUpdated() throws Exception {
         when(orderService.update(eq(1L), any(), eq(1L), eq(1L))).thenReturn(orderFixture());
 
         mockMvc.perform(put("/api/v1/orders/{id}", 1L)
@@ -147,7 +147,7 @@ class OrderControllerTest {
     }
 
     @Test
-    void deleteDelegatesToTheService() throws Exception {
+    void _06_ShouldDelegateToService_WhenOrderIsDeleted() throws Exception {
         mockMvc.perform(delete("/api/v1/orders/{id}", 1L)).andExpect(status().isOk());
 
         verify(orderService).delete(1L);
