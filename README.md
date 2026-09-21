@@ -18,6 +18,8 @@ This document is the **complete specification** of the project: it is meant to b
 - [Branching strategy](#branching-strategy)
 - [Standard response format](#standard-response-format)
 - [Spring AOP](#spring-aop)
+- [Testing strategy](#testing-strategy)
+  - [Test naming convention](#test-naming-convention)
 - [feature/core-architecture](#featurecore-architecture)
 - [feature/dao](#featuredao)
 - [feature/service](#featureservice)
@@ -215,6 +217,30 @@ The project uses **Spring AOP** to illustrate aspect-oriented programming, kept 
 - `LoggingAspect` (`service/aspect/LoggingAspect.java`): `@Around` advice on all public methods of `service.impl` (pointcut `execution(* edgareldy.springtutorial.service.impl..*(..))`), logs method entry/exit, arguments, execution time, and thrown exceptions
 - Also serves as a teaching base for the other advice types (`@Before`, `@After`, `@AfterReturning`, `@AfterThrowing`) alongside `@Around`
 - Illustrates the proxy-based nature of Spring AOP: since services are Spring-managed beans injected by interface (`CategoryService`, `ProductService`, ...), a JDK dynamic proxy is used rather than a CGLIB subclass proxy
+
+## Testing strategy
+
+Every module ships its tests before its Pull Request is opened, with the tool that fits the module's place in the architecture.
+
+| Module | Tool | What it verifies |
+|---|---|---|
+| `dao` | JUnit 5 + `SpringExtension` + H2 | DAO methods against a real in-memory database, with the Spring context loaded from the module's configuration |
+| `service` | JUnit 5 + Mockito, and `SpringExtension` for the context tests | Business rules with the DAO layer mocked, and the wiring of the service context |
+| `web` | JUnit 5 + `MockMvc` | HTTP status codes, payload shape (`ApiResponse<T>`) and error mapping, with the service layer mocked |
+
+### Test naming convention
+
+Every test method, in every module, is named `_NN_Should<Outcome>_When<Condition>`: a two-digit, zero-padded sequence number (the order of the methods within the class, restarting at `_01_` in each class; JUnit does not enforce it, it is kept consistent by convention), followed by what is expected, followed by the condition that produces it.
+
+```java
+@Test
+void _01_ShouldReturnCategory_WhenCategoryExists() { ... }
+
+@Test
+void _02_ShouldReturnEmpty_WhenCategoryDoesNotExist() { ... }
+```
+
+No other naming style (`shouldX()`, `testX()`, `givenX_whenY_thenZ()`, `savePersistsANewCategory()`) is used anywhere in this project's test suite. This applies to test methods only, not to `@BeforeEach`/`@AfterEach` helpers.
 
 ## feature/core-architecture
 

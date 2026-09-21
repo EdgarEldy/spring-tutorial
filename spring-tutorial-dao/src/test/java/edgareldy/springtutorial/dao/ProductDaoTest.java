@@ -48,7 +48,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void saveAndFindByIdResolveTheCategoryRelation() {
+    void _01_ShouldResolveCategoryRelation_WhenProductIsSavedThenFoundById() {
         Product product = new Product();
         product.setCategory(category);
         product.setProductName("Keyboard");
@@ -61,7 +61,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void findByCategoryIdReturnsOnlyMatchingProducts() {
+    void _02_ShouldReturnOnlyMatchingProducts_WhenFindingByCategoryId() {
         Product product = new Product();
         product.setCategory(category);
         product.setProductName("Mouse");
@@ -74,7 +74,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void countByCategoryIdCountsOnlyThatCategoryProducts() {
+    void _03_ShouldCountOnlyThatCategoryProducts_WhenCountingByCategoryId() {
         Product product = new Product();
         product.setCategory(category);
         product.setProductName("Monitor");
@@ -87,7 +87,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void findAllReturnsSavedProducts() {
+    void _04_ShouldReturnSavedProducts_WhenFindingAll() {
         Product product = new Product();
         product.setCategory(category);
         product.setProductName("Webcam");
@@ -100,7 +100,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void countReflectsSavedProducts() {
+    void _05_ShouldReflectSavedProducts_WhenCounting() {
         long before = productDao.count();
         Product product = new Product();
         product.setCategory(category);
@@ -114,7 +114,7 @@ class ProductDaoTest {
     }
 
     @Test
-    void deleteByIdRemovesTheProduct() {
+    void _06_ShouldRemoveProduct_WhenProductIsDeletedById() {
         Product product = new Product();
         product.setCategory(category);
         product.setProductName("Temporary");
