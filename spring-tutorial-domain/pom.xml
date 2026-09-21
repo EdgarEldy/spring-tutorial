@@ -15,14 +15,20 @@
 
     <name>spring-tutorial-domain</name>
     <description>
-        JPA entities (jakarta.persistence.* only). No dependency on Spring or on
-        spring-tutorial-common: this module is deliberately pure Java.
+        JPA entities (jakarta.persistence.* only), plus Bean Validation constraints
+        (jakarta.validation.constraints.*). No dependency on Spring or on
+        spring-tutorial-common: this module is deliberately pure Java, and both
+        Jakarta specs used here are annotation-only, framework-agnostic contracts.
     </description>
 
     <dependencies>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
         <dependency>

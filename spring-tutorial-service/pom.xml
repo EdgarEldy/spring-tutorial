@@ -22,6 +22,10 @@
     <dependencies>
         <dependency>
             <groupId>edgareldy.springtutorial</groupId>
+            <artifactId>spring-tutorial-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edgareldy.springtutorial</groupId>
             <artifactId>spring-tutorial-dao</artifactId>
         </dependency>
 
