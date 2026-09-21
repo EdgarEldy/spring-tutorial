@@ -81,7 +81,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void findAllReturnsAPagedApiResponse() throws Exception {
+    void _01_ShouldReturnPagedApiResponse_WhenProductsAreListed() throws Exception {
         when(productService.findAll(isNull(), anyInt(), any())).thenReturn(List.of(productFixture()));
         when(productService.count(isNull())).thenReturn(1L);
 
@@ -94,14 +94,14 @@ class ProductControllerTest {
     }
 
     @Test
-    void findByIdReturnsNotFoundWhenMissing() throws Exception {
+    void _02_ShouldReturnNotFound_WhenProductIsMissing() throws Exception {
         when(productService.findById(99L)).thenThrow(new ResourceNotFoundException("Product 99 not found"));
 
         mockMvc.perform(get("/api/v1/products/{id}", 99L)).andExpect(status().isNotFound());
     }
 
     @Test
-    void createDelegatesToTheServiceWithTheResolvedCategoryId() throws Exception {
+    void _03_ShouldDelegateWithResolvedCategoryId_WhenProductIsCreated() throws Exception {
         when(productService.create(any(), eq(1L))).thenReturn(productFixture());
 
         MvcResult result = mockMvc.perform(post("/api/v1/products")
@@ -114,7 +114,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void createRejectsANonPositivePrice() throws Exception {
+    void _04_ShouldRejectCreation_WhenPriceIsNotPositive() throws Exception {
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new ProductPayload("Clean Code", -1.0, 1L))))
@@ -122,7 +122,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void updateDelegatesToTheService() throws Exception {
+    void _05_ShouldDelegateToService_WhenProductIsUpdated() throws Exception {
         when(productService.update(eq(1L), any(), eq(1L))).thenReturn(productFixture());
 
         mockMvc.perform(put("/api/v1/products/{id}", 1L)
@@ -132,7 +132,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void deleteDelegatesToTheService() throws Exception {
+    void _06_ShouldDelegateToService_WhenProductIsDeleted() throws Exception {
         mockMvc.perform(delete("/api/v1/products/{id}", 1L)).andExpect(status().isOk());
 
         verify(productService).delete(1L);
