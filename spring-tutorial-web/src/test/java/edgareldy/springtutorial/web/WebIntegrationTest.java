@@ -90,7 +90,7 @@ class WebIntegrationTest {
     }
 
     @Test
-    void listingAndReadingOrdersResolvesTheNestedCategoryWithoutError() throws Exception {
+    void _01_ShouldResolveNestedCategoryWithoutError_WhenOrdersAreListedAndRead() throws Exception {
         Long categoryId = createCategory("Books");
         Long productId = createProduct("Clean Code", 42.0, categoryId);
         Long customerId = createCustomer();
@@ -123,7 +123,7 @@ class WebIntegrationTest {
     }
 
     @Test
-    void validationMessageIsResolvedThroughTheRealMessageSourcePerLocale() throws Exception {
+    void _02_ShouldResolveValidationMessagePerLocale_WhenRealMessageSourceIsUsed() throws Exception {
         String invalidBody = objectMapper.writeValueAsString(new CategoryPayload(""));
 
         String englishMessage = mockMvc.perform(post("/api/v1/categories")
