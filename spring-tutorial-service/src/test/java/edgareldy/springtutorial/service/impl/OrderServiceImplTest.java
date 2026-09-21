@@ -64,7 +64,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void createComputesTotalAndPublishesAnEvent() {
+    void _01_ShouldComputeTotalAndPublishEvent_WhenOrderIsCreated() {
         Customer customer = new Customer();
         customer.setId(1L);
         Product product = new Product();
@@ -91,7 +91,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void createAsksTheProviderForAFreshOrderReferenceGeneratorEachTime() {
+    void _02_ShouldAskProviderForFreshGenerator_WhenOrderIsCreated() {
         Customer customer = new Customer();
         customer.setId(1L);
         Product product = new Product();
@@ -112,14 +112,14 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void countDelegatesToTheDao() {
+    void _03_ShouldDelegateToDao_WhenCounting() {
         when(orderDao.count()).thenReturn(11L);
 
         assertEquals(11L, orderService.count());
     }
 
     @Test
-    void updateResolvesCustomerAndProductAgainAndRecomputesTheTotal() {
+    void _04_ShouldResolveAgainAndRecomputeTotal_WhenOrderIsUpdated() {
         Order existing = new Order();
         existing.setId(9L);
         Customer customer = new Customer();

@@ -71,7 +71,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void findAllReturnsAPagedApiResponse() throws Exception {
+    void _01_ShouldReturnPagedApiResponse_WhenCategoriesAreListed() throws Exception {
         Category category = new Category();
         category.setId(1L);
         category.setCategoryName("Books");
@@ -88,7 +88,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void findByIdReturnsNotFoundWhenMissing() throws Exception {
+    void _02_ShouldReturnNotFound_WhenCategoryIsMissing() throws Exception {
         when(categoryService.findById(99L)).thenThrow(new ResourceNotFoundException("Category 99 not found"));
 
         MvcResult result = mockMvc.perform(get("/api/v1/categories/{id}", 99L))
@@ -99,7 +99,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void createReturnsCreatedWithTheMappedResponse() throws Exception {
+    void _03_ShouldReturnCreatedWithMappedResponse_WhenCategoryIsCreated() throws Exception {
         Category created = new Category();
         created.setId(1L);
         created.setCategoryName("Books");
@@ -115,7 +115,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void createRejectsABlankCategoryName() throws Exception {
+    void _04_ShouldRejectCreation_WhenCategoryNameIsBlank() throws Exception {
         mockMvc.perform(post("/api/v1/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new CategoryPayload(""))))
@@ -123,7 +123,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void updateDelegatesToTheService() throws Exception {
+    void _05_ShouldDelegateToService_WhenCategoryIsUpdated() throws Exception {
         Category updated = new Category();
         updated.setId(1L);
         updated.setCategoryName("Renamed");
@@ -139,7 +139,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void deleteDelegatesToTheService() throws Exception {
+    void _06_ShouldDelegateToService_WhenCategoryIsDeleted() throws Exception {
         mockMvc.perform(delete("/api/v1/categories/{id}", 1L)).andExpect(status().isOk());
 
         verify(categoryService).delete(1L);
