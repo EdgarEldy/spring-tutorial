@@ -21,7 +21,7 @@ class CustomerValidatorTest {
     private final CustomerValidator validator = new CustomerValidator();
 
     @Test
-    void rejectsWhenLastNameMatchesFirstNameIgnoringCase() {
+    void _01_ShouldReject_WhenLastNameMatchesFirstNameIgnoringCase() {
         Customer customer = new Customer();
         customer.setFirstName("Grace");
         customer.setLastName("GRACE");
@@ -33,7 +33,7 @@ class CustomerValidatorTest {
     }
 
     @Test
-    void acceptsDistinctFirstAndLastNames() {
+    void _02_ShouldAccept_WhenFirstAndLastNamesAreDistinct() {
         Customer customer = new Customer();
         customer.setFirstName("Grace");
         customer.setLastName("Hopper");
