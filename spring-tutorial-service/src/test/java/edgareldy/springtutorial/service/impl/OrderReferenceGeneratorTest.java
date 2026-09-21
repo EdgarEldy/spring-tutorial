@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class OrderReferenceGeneratorTest {
 
     @Test
-    void generateUsesTheInjectedClockRatherThanTheSystemClock() {
+    void _01_ShouldUseInjectedClock_WhenReferenceIsGenerated() {
         Clock fixedClock = Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC);
         OrderReferenceGenerator generator = new OrderReferenceGenerator(fixedClock);
 

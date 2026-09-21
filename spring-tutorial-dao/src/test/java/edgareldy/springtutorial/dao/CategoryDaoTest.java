@@ -35,7 +35,7 @@ class CategoryDaoTest {
     private CategoryDao categoryDao;
 
     @Test
-    void savePersistsANewCategory() {
+    void _01_ShouldPersistCategory_WhenCategoryIsNew() {
         Category category = new Category();
         category.setCategoryName("Electronics");
 
@@ -45,14 +45,14 @@ class CategoryDaoTest {
     }
 
     @Test
-    void findByIdReturnsEmptyWhenCategoryDoesNotExist() {
+    void _02_ShouldReturnEmpty_WhenCategoryDoesNotExist() {
         Optional<Category> found = categoryDao.findById(-1L);
 
         assertFalse(found.isPresent());
     }
 
     @Test
-    void findAllReturnsSavedCategories() {
+    void _03_ShouldReturnSavedCategories_WhenFindingAll() {
         Category category = new Category();
         category.setCategoryName("Books");
         categoryDao.save(category);
@@ -63,7 +63,7 @@ class CategoryDaoTest {
     }
 
     @Test
-    void countReflectsSavedCategories() {
+    void _04_ShouldReflectSavedCategories_WhenCounting() {
         long before = categoryDao.count();
         Category category = new Category();
         category.setCategoryName("Counted");
@@ -75,7 +75,7 @@ class CategoryDaoTest {
     }
 
     @Test
-    void deleteByIdRemovesTheCategory() {
+    void _05_ShouldRemoveCategory_WhenCategoryIsDeletedById() {
         Category category = new Category();
         category.setCategoryName("Temporary");
         Category saved = categoryDao.save(category);

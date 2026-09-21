@@ -71,7 +71,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void saveAndFindByIdResolveCustomerAndProduct() {
+    void _01_ShouldResolveCustomerAndProduct_WhenOrderIsSavedThenFoundById() {
         Order order = new Order();
         order.setCustomer(customer);
         order.setProduct(product);
@@ -86,7 +86,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void findByCustomerIdReturnsOnlyThatCustomerOrders() {
+    void _02_ShouldReturnOnlyThatCustomerOrders_WhenFindingByCustomerId() {
         Order order = new Order();
         order.setCustomer(customer);
         order.setProduct(product);
@@ -100,7 +100,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void findByProductIdReturnsOnlyThatProductOrders() {
+    void _03_ShouldReturnOnlyThatProductOrders_WhenFindingByProductId() {
         Order order = new Order();
         order.setCustomer(customer);
         order.setProduct(product);
@@ -114,7 +114,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void findAllReturnsSavedOrders() {
+    void _04_ShouldReturnSavedOrders_WhenFindingAll() {
         Order order = new Order();
         order.setCustomer(customer);
         order.setProduct(product);
@@ -128,7 +128,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void countReflectsSavedOrders() {
+    void _05_ShouldReflectSavedOrders_WhenCounting() {
         long before = orderDao.count();
         Order order = new Order();
         order.setCustomer(customer);
@@ -143,7 +143,7 @@ class OrderDaoTest {
     }
 
     @Test
-    void deleteByIdRemovesTheOrder() {
+    void _06_ShouldRemoveOrder_WhenOrderIsDeletedById() {
         Order order = new Order();
         order.setCustomer(customer);
         order.setProduct(product);

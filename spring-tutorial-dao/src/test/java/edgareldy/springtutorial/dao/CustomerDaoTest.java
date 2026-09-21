@@ -35,7 +35,7 @@ class CustomerDaoTest {
     private CustomerDao customerDao;
 
     @Test
-    void savePersistsANewCustomer() {
+    void _01_ShouldPersistCustomer_WhenCustomerIsNew() {
         Customer customer = new Customer();
         customer.setFirstName("Grace");
         customer.setLastName("Hopper");
@@ -49,14 +49,14 @@ class CustomerDaoTest {
     }
 
     @Test
-    void findByIdReturnsEmptyWhenCustomerDoesNotExist() {
+    void _02_ShouldReturnEmpty_WhenCustomerDoesNotExist() {
         Optional<Customer> found = customerDao.findById(-1L);
 
         assertFalse(found.isPresent());
     }
 
     @Test
-    void deleteByIdRemovesTheCustomer() {
+    void _03_ShouldRemoveCustomer_WhenCustomerIsDeletedById() {
         Customer customer = new Customer();
         customer.setFirstName("Temp");
         customer.setLastName("Customer");
@@ -71,7 +71,7 @@ class CustomerDaoTest {
     }
 
     @Test
-    void countReflectsSavedCustomers() {
+    void _04_ShouldReflectSavedCustomers_WhenCounting() {
         long before = customerDao.count();
         Customer customer = new Customer();
         customer.setFirstName("Counted");
@@ -87,7 +87,7 @@ class CustomerDaoTest {
     }
 
     @Test
-    void findAllReturnsSavedCustomers() {
+    void _05_ShouldReturnSavedCustomers_WhenFindingAll() {
         Customer customer = new Customer();
         customer.setFirstName("Katherine");
         customer.setLastName("Johnson");
