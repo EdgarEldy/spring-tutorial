@@ -45,7 +45,7 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void createResolvesTheCategoryBeforeSaving() {
+    void _01_ShouldResolveCategoryBeforeSaving_WhenProductIsCreated() {
         Category category = new Category();
         category.setId(1L);
         when(categoryDao.findById(1L)).thenReturn(Optional.of(category));
@@ -60,7 +60,7 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void createThrowsWhenTheCategoryDoesNotExist() {
+    void _02_ShouldThrowNotFound_WhenProductCategoryDoesNotExist() {
         when(categoryDao.findById(1L)).thenReturn(Optional.empty());
         Product product = new Product();
 
@@ -68,35 +68,35 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void findAllWithoutCategoryIdDelegatesToFindAll() {
+    void _03_ShouldDelegateToFindAll_WhenNoCategoryIdIsGiven() {
         productService.findAll(null, 0, 5);
 
         verify(productDao).findAll(0, 5);
     }
 
     @Test
-    void findAllWithCategoryIdDelegatesToFindByCategoryId() {
+    void _04_ShouldDelegateToFindByCategoryId_WhenCategoryIdIsGiven() {
         productService.findAll(1L, 0, 5);
 
         verify(productDao).findByCategoryId(1L, 0, 5);
     }
 
     @Test
-    void countWithoutCategoryIdDelegatesToCount() {
+    void _05_ShouldDelegateToCount_WhenNoCategoryIdIsGiven() {
         when(productDao.count()).thenReturn(7L);
 
         assertEquals(7L, productService.count(null));
     }
 
     @Test
-    void countWithCategoryIdDelegatesToCountByCategoryId() {
+    void _06_ShouldDelegateToCountByCategoryId_WhenCategoryIdIsGiven() {
         when(productDao.countByCategoryId(1L)).thenReturn(3L);
 
         assertEquals(3L, productService.count(1L));
     }
 
     @Test
-    void updateResolvesTheCategoryAgainAndAppliesTheNewValues() {
+    void _07_ShouldResolveCategoryAgainAndApplyNewValues_WhenProductIsUpdated() {
         Product existing = new Product();
         existing.setId(1L);
         Category newCategory = new Category();
